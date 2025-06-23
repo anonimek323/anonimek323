@@ -1,0 +1,3547 @@
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+#include <signal.h>
+#include <setjmp.h>
+#include <assert.h>
+
+#if !defined(__clang__) && !defined(__GNUC__)
+// Zakomentuj poniższy błąd, jeżeli chcesz przetestować testy na swoim kompilatorze C.
+#error System testow jednostkowych jest przeznaczony dla kompilatorów GCC/Clang.
+#endif
+
+#if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
+// Zakomentuj poniższy błąd, jeżeli chcesz przetestować testy na platformie Windows.
+#error System testow jednostkowych NIE jest przeznaczony dla testów uruchamianych na platformach Windows.
+#endif
+
+#define _RLDEBUG_API_
+#include "unit_helper_v2.h"
+#include "rdebug.h"
+
+#include "tested_declarations.h"
+#include "rdebug.h"
+
+//
+// Elementy globalne dla całego testu
+//
+
+
+
+
+//
+//  Test 1: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 502 bajtów)
+//
+void UTEST1(void)
+{
+    // informacje o teście
+    test_start(1, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 502 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(502);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                char *expected_maze[] = { "#################", "#               #", "# # ##### ##### #", "# #     # #   # #", "##### # ### # ###", "#   # #     #   #", "# # # ######### #", "# # #       #   #", "# # ####### # # #", "# # #   #   # # #", "# # # ### ### ###", "# # #       #   #", "# # ######### # #", "# #         # # #", "# ######### ### #", "#       # # #   #", "# ##### # # # # #", "#     #   #   # #", "#################" };;
+                
+                int res = load_maze("caught", &maze);
+                
+                if (!0)
+                { 
+                    test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                    test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                    onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                    int i = 0;
+        
+                    for (; i < 19; ++i)
+                        test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+                    
+                    free_maze(maze);
+                }
+                else
+                    test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 2: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 1196 bajtów)
+//
+void UTEST2(void)
+{
+    // informacje o teście
+    test_start(2, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 1196 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(1196);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                char *expected_maze[] = { "###################################", "#         # # #                   #", "# ### # ### # # ########### # #####", "#   # # #   # #   # #     # # #   #", "##### # # ### ### # # ### # # # # #", "#     # # #     #   # #   # #   # #", "# ##### # # ####### # ### ####### #", "#   #   # #   #     #   #   #     #", "# # # ### ### # ####### ### # ### #", "# # # # #   #   #     # #   #   # #", "### # # ### ### ### # # # ### # ###", "#   #     #   #     # # # #   #   #", "# ####### ### ##### ### # # ##### #", "#   #       #     # #   # #     # #", "# # # ########### ### ### ##### # #", "# # # #   #     #     # #   #   # #", "### # # # # ### ####### ### # ### #", "#   # # # # #         #   # # #   #", "# # ### # # # ####### ### # ### ###", "# # #   #   # #           #   #   #", "# # # ####### ### ########### ### #", "# # #   #   #   #   #   #   #     #", "# ##### # ##### ##### # # # ##### #", "#       #     # #   # #   #   #   #", "# ########### # # # # ##### ### ###", "#             #   #       #       #", "###################################" };;
+                
+                int res = load_maze("liquid", &maze);
+                
+                if (!0)
+                { 
+                    test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                    test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                    onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                    int i = 0;
+        
+                    for (; i < 27; ++i)
+                        test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+                    
+                    free_maze(maze);
+                }
+                else
+                    test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 3: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 2932 bajtów)
+//
+void UTEST3(void)
+{
+    // informacje o teście
+    test_start(3, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 2932 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(2932);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                char *expected_maze[] = { "###########################################################", "#       #       #               #   #         #           #", "# ##### # ##### # ####### ##### # # # ####### # ####### # #", "#     # #   # # #     # # #   #   # #   # #   #       # # #", "##### # ### # # ##### # # # ### ####### # # ##### ##### # #", "#     #   # # #     #   # #     #   #   # #       #     # #", "# ####### # # # ####### # ### ### # # ### ######### ##### #", "# #   #   #   #       # #   # # # #   #     # #     #     #", "# # # # ### ######### # ### # # # ##### # # # # # #########", "#   # # #   #       # # #   #   # # #   # #   # # #       #", "##### # ##### ##### # # # ##### # # # ### ##### ### ##### #", "#   # #       #     #   #     # # #   #   #   #     #   # #", "# # # ######### ####### ##### ### # ### ### # ####### # # #", "# #   #     #   #     #     # #   # # #     #   #   # #   #", "# ######### # ### ### ##### # # ### # ##### # ### # # ### #", "#       # # # #     #   #   #     #   #   # #     # # # # #", "####### # # # ##### ### ######### # ### # ######### # # # #", "#     #   # # #     # #         # # #   #         # # # # #", "# ### ##### # # ##### ######### # ### # ######### # # # # #", "# #       #   #   #         # # #     # #   #   #   # # # #", "# # ##### # ##### # # ##### # # # ####### # # # # ### # # #", "# # #     # #     # #   # # # # # #       # # # # #   #   #", "# # # ##### ### ####### # # # # ### ####### # ### # ### ###", "# # #     # #   #       #     #     #   #   #     # #     #", "# # ####### # ##### ### ############# ### ### ##### ##### #", "# #   #     #   #   #   #           #   #   # #     #   # #", "# ### # ##### # # ####### ####### # ### ### ### ##### # ###", "# #   #     # # # #     # #   #   #       #   #   #   #   #", "# # ####### ### # # ### # # ### ############# ### # ##### #", "# #       #     #     # # #   # #           #   #   #     #", "######### ############# # ### # # ####### ##### # ### ### #", "#           #           #     #   # #   #     # # #   #   #", "# ######### # ### # ######### ##### # # ##### # ### ##### #", "# #   #     # # # # #       # #   #   #   #   #   #     # #", "# # # ####### # # ### ##### # # # # ##### # ##### # ### ###", "# # #       # # #   # #     # # # # #   # #     # #   #   #", "# # ####### # # ### # # ##### # ### ### # ### # # ####### #", "#   #   #   # #   #   #       #         #   # # #   #     #", "# ### ### # # ### ############### ####### # # ##### # ### #", "#   # #   # #   #       #   #   # #       # #     #   #   #", "### # # ####### ##### # # # # # ### ####### ##### ##### ###", "#     #               #   #   #     #           #         #", "###########################################################" };;
+                
+                int res = load_maze("gather", &maze);
+                
+                if (!0)
+                { 
+                    test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                    test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                    onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                    int i = 0;
+        
+                    for (; i < 43; ++i)
+                        test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+                    
+                    free_maze(maze);
+                }
+                else
+                    test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 4: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 1548 bajtów)
+//
+void UTEST4(void)
+{
+    // informacje o teście
+    test_start(4, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 1548 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(1548);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                char *expected_maze[] = { "###################", "# #               #", "# # ######### # # #", "#   #   #   # # # #", "# ### # # # # # ###", "# #   # # # # #   #", "# # ### # # ##### #", "# # #   # #   #   #", "# ### # # ### # ###", "# #   # # # # #   #", "# # ##### # # ### #", "#   #     #   #   #", "### # ##### ### # #", "# # # #         # #", "# # # ########### #", "#   #         #   #", "# ########### ### #", "#     # #   #   # #", "##### # # # # # # #", "# #     # # # # # #", "# # ##### # ### # #", "# #   #   #     # #", "# ### # ######### #", "#     # #         #", "####### ### #######", "#     #   #       #", "# ### # # ####### #", "# #   # # #       #", "# ### ### # #######", "#   #   # #     # #", "# # ### # ##### # #", "# #   # # # #   # #", "# ### # # # # ### #", "#   # #   #       #", "# ### ########### #", "# #   #   #   # # #", "# # ### # # # # # #", "# # #   #   # #   #", "### # ####### # ###", "#   #   #   # #   #", "# ##### # ### #####", "#     #   #   #   #", "# # ##### # ### # #", "# #     # #     # #", "# ### ### ##### # #", "# # #     #   # # #", "# # ####### # ### #", "#         # # #   #", "######### # # # # #", "#         # #   # #", "# ######### ##### #", "# #     #   #     #", "### ### # ### #####", "#   #     #       #", "###################" };;
+                
+                int res = load_maze("true", &maze);
+                
+                if (!0)
+                { 
+                    test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                    test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                    onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                    int i = 0;
+        
+                    for (; i < 55; ++i)
+                        test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+                    
+                    free_maze(maze);
+                }
+                else
+                    test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 5: Sprawdzanie poprawności działania funkcji load_maze
+//
+void UTEST5(void)
+{
+    // informacje o teście
+    test_start(5, "Sprawdzanie poprawności działania funkcji load_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                char *expected_maze[] = { "NONE" };;
+                
+                int res = load_maze("chair", &maze);
+                
+                if (!3)
+                { 
+                    test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                    test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                    onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                    int i = 0;
+        
+                    for (; i < 55; ++i)
+                        test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+                    
+                    free_maze(maze);
+                }
+                else
+                    test_error(res == 3, "Funkcja load_maze() powinna zwrócić kod błędu 3, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 6: Sprawdzanie poprawności działania funkcji load_maze
+//
+void UTEST6(void)
+{
+    // informacje o teście
+    test_start(6, "Sprawdzanie poprawności działania funkcji load_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                char *expected_maze[] = { "NONE" };;
+                
+                int res = load_maze("subtract", &maze);
+                
+                if (!3)
+                { 
+                    test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                    test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                    onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                    int i = 0;
+        
+                    for (; i < 55; ++i)
+                        test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+                    
+                    free_maze(maze);
+                }
+                else
+                    test_error(res == 3, "Funkcja load_maze() powinna zwrócić kod błędu 3, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 7: Sprawdzanie poprawności działania funkcji load_maze
+//
+void UTEST7(void)
+{
+    // informacje o teście
+    test_start(7, "Sprawdzanie poprawności działania funkcji load_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                char *expected_maze[] = { "NONE" };;
+                
+                int res = load_maze("circle", &maze);
+                
+                if (!3)
+                { 
+                    test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                    test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                    onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                    int i = 0;
+        
+                    for (; i < 55; ++i)
+                        test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+                    
+                    free_maze(maze);
+                }
+                else
+                    test_error(res == 3, "Funkcja load_maze() powinna zwrócić kod błędu 3, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 8: Sprawdzanie poprawności działania funkcji load_maze
+//
+void UTEST8(void)
+{
+    // informacje o teście
+    test_start(8, "Sprawdzanie poprawności działania funkcji load_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                char *expected_maze[] = { "NONE" };;
+                
+                int res = load_maze("thick", &maze);
+                
+                if (!3)
+                { 
+                    test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                    test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                    onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                    int i = 0;
+        
+                    for (; i < 55; ++i)
+                        test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+                    
+                    free_maze(maze);
+                }
+                else
+                    test_error(res == 3, "Funkcja load_maze() powinna zwrócić kod błędu 3, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 9: Sprawdzanie poprawności działania funkcji load_maze
+//
+void UTEST9(void)
+{
+    // informacje o teście
+    test_start(9, "Sprawdzanie poprawności działania funkcji load_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                char *expected_maze[] = { "NONE" };;
+                
+                int res = load_maze("did", &maze);
+                
+                if (!3)
+                { 
+                    test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                    test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                    onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                    int i = 0;
+        
+                    for (; i < 55; ++i)
+                        test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+                    
+                    free_maze(maze);
+                }
+                else
+                    test_error(res == 3, "Funkcja load_maze() powinna zwrócić kod błędu 3, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 10: Sprawdzanie poprawności działania funkcji load_maze
+//
+void UTEST10(void)
+{
+    // informacje o teście
+    test_start(10, "Sprawdzanie poprawności działania funkcji load_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                char *expected_maze[] = { "NONE" };;
+                
+                int res = load_maze("station", &maze);
+                
+                if (!3)
+                { 
+                    test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                    test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                    onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                    int i = 0;
+        
+                    for (; i < 55; ++i)
+                        test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+                    
+                    free_maze(maze);
+                }
+                else
+                    test_error(res == 3, "Funkcja load_maze() powinna zwrócić kod błędu 3, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 11: Sprawdzanie poprawności działania funkcji load_maze
+//
+void UTEST11(void)
+{
+    // informacje o teście
+    test_start(11, "Sprawdzanie poprawności działania funkcji load_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                char *expected_maze[] = { "NONE" };;
+                
+                int res = load_maze("chord", &maze);
+                
+                if (!2)
+                { 
+                    test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                    test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                    onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                    int i = 0;
+        
+                    for (; i < 55; ++i)
+                        test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+                    
+                    free_maze(maze);
+                }
+                else
+                    test_error(res == 2, "Funkcja load_maze() powinna zwrócić kod błędu 2, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 12: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 0 bajtów)
+//
+void UTEST12(void)
+{
+    // informacje o teście
+    test_start(12, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 0 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(0);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                
+                int res = load_maze("above", &maze);
+                
+                test_error(res == 4, "Funkcja load_maze() powinna zwrócić kod błędu 4, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 13: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 176 bajtów)
+//
+void UTEST13(void)
+{
+    // informacje o teście
+    test_start(13, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 176 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(176);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                
+                int res = load_maze("above", &maze);
+                
+                test_error(res == 4, "Funkcja load_maze() powinna zwrócić kod błędu 4, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 14: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 188 bajtów)
+//
+void UTEST14(void)
+{
+    // informacje o teście
+    test_start(14, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 188 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(188);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                
+                int res = load_maze("above", &maze);
+                
+                test_error(res == 4, "Funkcja load_maze() powinna zwrócić kod błędu 4, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 15: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 200 bajtów)
+//
+void UTEST15(void)
+{
+    // informacje o teście
+    test_start(15, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 200 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(200);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                
+                int res = load_maze("above", &maze);
+                
+                test_error(res == 4, "Funkcja load_maze() powinna zwrócić kod błędu 4, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 16: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 212 bajtów)
+//
+void UTEST16(void)
+{
+    // informacje o teście
+    test_start(16, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 212 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(212);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                
+                int res = load_maze("above", &maze);
+                
+                test_error(res == 4, "Funkcja load_maze() powinna zwrócić kod błędu 4, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 17: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 224 bajtów)
+//
+void UTEST17(void)
+{
+    // informacje o teście
+    test_start(17, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 224 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(224);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                
+                int res = load_maze("above", &maze);
+                
+                test_error(res == 4, "Funkcja load_maze() powinna zwrócić kod błędu 4, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 18: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 236 bajtów)
+//
+void UTEST18(void)
+{
+    // informacje o teście
+    test_start(18, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 236 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(236);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                
+                int res = load_maze("above", &maze);
+                
+                test_error(res == 4, "Funkcja load_maze() powinna zwrócić kod błędu 4, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 19: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 248 bajtów)
+//
+void UTEST19(void)
+{
+    // informacje o teście
+    test_start(19, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 248 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(248);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                
+                int res = load_maze("above", &maze);
+                
+                test_error(res == 4, "Funkcja load_maze() powinna zwrócić kod błędu 4, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 20: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 260 bajtów)
+//
+void UTEST20(void)
+{
+    // informacje o teście
+    test_start(20, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 260 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(260);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                
+                int res = load_maze("above", &maze);
+                
+                test_error(res == 4, "Funkcja load_maze() powinna zwrócić kod błędu 4, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 21: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 272 bajtów)
+//
+void UTEST21(void)
+{
+    // informacje o teście
+    test_start(21, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 272 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(272);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                
+                int res = load_maze("above", &maze);
+                
+                test_error(res == 4, "Funkcja load_maze() powinna zwrócić kod błędu 4, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 22: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 284 bajtów)
+//
+void UTEST22(void)
+{
+    // informacje o teście
+    test_start(22, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 284 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(284);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                
+                int res = load_maze("above", &maze);
+                
+                test_error(res == 4, "Funkcja load_maze() powinna zwrócić kod błędu 4, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 23: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 296 bajtów)
+//
+void UTEST23(void)
+{
+    // informacje o teście
+    test_start(23, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 296 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(296);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                
+                int res = load_maze("above", &maze);
+                
+                test_error(res == 4, "Funkcja load_maze() powinna zwrócić kod błędu 4, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 24: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 308 bajtów)
+//
+void UTEST24(void)
+{
+    // informacje o teście
+    test_start(24, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 308 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(308);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                
+                int res = load_maze("above", &maze);
+                
+                test_error(res == 4, "Funkcja load_maze() powinna zwrócić kod błędu 4, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 25: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 320 bajtów)
+//
+void UTEST25(void)
+{
+    // informacje o teście
+    test_start(25, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 320 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(320);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                
+                int res = load_maze("above", &maze);
+                
+                test_error(res == 4, "Funkcja load_maze() powinna zwrócić kod błędu 4, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 26: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 332 bajtów)
+//
+void UTEST26(void)
+{
+    // informacje o teście
+    test_start(26, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 332 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(332);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                
+                int res = load_maze("above", &maze);
+                
+                test_error(res == 4, "Funkcja load_maze() powinna zwrócić kod błędu 4, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 27: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 344 bajtów)
+//
+void UTEST27(void)
+{
+    // informacje o teście
+    test_start(27, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 344 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(344);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                
+                int res = load_maze("above", &maze);
+                
+                test_error(res == 4, "Funkcja load_maze() powinna zwrócić kod błędu 4, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 28: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 356 bajtów)
+//
+void UTEST28(void)
+{
+    // informacje o teście
+    test_start(28, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 356 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(356);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                
+                int res = load_maze("above", &maze);
+                
+                test_error(res == 4, "Funkcja load_maze() powinna zwrócić kod błędu 4, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 29: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 368 bajtów)
+//
+void UTEST29(void)
+{
+    // informacje o teście
+    test_start(29, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 368 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(368);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                
+                int res = load_maze("above", &maze);
+                
+                test_error(res == 4, "Funkcja load_maze() powinna zwrócić kod błędu 4, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 30: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 380 bajtów)
+//
+void UTEST30(void)
+{
+    // informacje o teście
+    test_start(30, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 380 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(380);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                
+                int res = load_maze("above", &maze);
+                
+                test_error(res == 4, "Funkcja load_maze() powinna zwrócić kod błędu 4, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 31: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 392 bajtów)
+//
+void UTEST31(void)
+{
+    // informacje o teście
+    test_start(31, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 392 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(392);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                
+                int res = load_maze("above", &maze);
+                
+                test_error(res == 4, "Funkcja load_maze() powinna zwrócić kod błędu 4, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 32: Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 404 bajtów)
+//
+void UTEST32(void)
+{
+    // informacje o teście
+    test_start(32, "Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 404 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(404);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                
+                int res = load_maze("above", &maze);
+                
+                test_error(res == 4, "Funkcja load_maze() powinna zwrócić kod błędu 4, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 33: Sprawdzanie poprawności działania funkcji load_maze
+//
+void UTEST33(void)
+{
+    // informacje o teście
+    test_start(33, "Sprawdzanie poprawności działania funkcji load_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                
+                int res = load_maze(NULL, &maze);
+                
+                test_error(res == 1, "Funkcja load_maze() powinna zwrócić kod błędu 1, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 34: Sprawdzanie poprawności działania funkcji load_maze
+//
+void UTEST34(void)
+{
+    // informacje o teście
+    test_start(34, "Sprawdzanie poprawności działania funkcji load_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+
+                int res = load_maze(NULL, NULL);
+
+                test_error(res == 1, "Funkcja load_maze() powinna zwrócić kod błędu 1, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 35: Sprawdzanie poprawności działania funkcji load_maze
+//
+void UTEST35(void)
+{
+    // informacje o teście
+    test_start(35, "Sprawdzanie poprawności działania funkcji load_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+
+                int res = load_maze("above", NULL);
+
+                test_error(res == 1, "Funkcja load_maze() powinna zwrócić kod błędu 1, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 36: Sprawdzanie poprawności działania funkcji solve_maze (limit sterty ustawiono na 540 bajtów)
+//
+void UTEST36(void)
+{
+    // informacje o teście
+    test_start(36, "Sprawdzanie poprawności działania funkcji solve_maze (limit sterty ustawiono na 540 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(540);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                char *expected_maze[] = { "###################", "#       #   #     #", "# # ### # # ### # #", "# # #   # #   # # #", "# # ### ##### ### #", "# #   #     #     #", "##### ##### ##### #", "#     #   #     # #", "# ##### ### ##### #", "#     #     #     #", "# ### # ##### #####", "#   # #     # #b  #", "### # ####### ### #", "# # #   #   # #   #", "# # ### # # # # # #", "#   #   # # #   # #", "# ### ### # ##### #", "#  a#     #       #", "###################" };;
+                char *expected_solved_maze[] = { "###################", "#       #   #     #", "# # ### # # ### # #", "# # #   # #   # # #", "# # ### ##### ### #", "# #   #     #     #", "##### ##### ##### #", "#     #   #     # #", "# ##### ### ##### #", "#*****#     #     #", "#*###*# ##### #####", "#***#*#     # #b**#", "###*#*####### ###*#", "# #*#***#***# #  *#", "# #*###*#*#*# # #*#", "#***#***#*#*#   #*#", "#*###*###*#*#####*#", "#**a#*****#*******#", "###################" };;
+
+                int res = load_maze("watch", &maze);
+
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                int i = 0;
+
+                for (; i < 19; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                res = solve_maze(maze, 3, 17);
+                    
+                test_error(res == 1, "Funkcja solve_maze() powinna zwrócić kod błędu 1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                if (res == 1)
+                {
+                    i = 0;
+        
+                    for (; i < 19; ++i)
+                        test_error(strcmp(expected_solved_maze[i], maze[i]) == 0, "Funkcja solve_maze() błędnie znalazła wyjście z labiryntu w linii %d, powinno być %s, a jest %s", i, expected_solved_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja solve_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+                }
+                else
+                {
+                    i = 0;
+        
+                    for (; i < 19; ++i)
+                        test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja solve_maze() nie powinna modyfikować zawartości labiryntu w przypadku przekazania błędnych danych zmodyfikowany został wiersz %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja solve_maze() błędnie znalazła wyjście z labiryntu w linii %d, powinno być NULL", i);
+                }
+                
+                
+                free_maze(maze);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 37: Sprawdzanie poprawności działania funkcji solve_maze (limit sterty ustawiono na 1226 bajtów)
+//
+void UTEST37(void)
+{
+    // informacje o teście
+    test_start(37, "Sprawdzanie poprawności działania funkcji solve_maze (limit sterty ustawiono na 1226 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(1226);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                char *expected_maze[] = { "#################################", "#     # #       #       #       #", "# ### # # # ### # ##### ### #####", "#   # #   #   #   #   #   # #   #", "# # # ####### ##### ##### # # # #", "# # #     #   #           #   # #", "### ##### # ######### ######### #", "#   #   # #   #     # #         #", "# ### ### # # # ### # # ####### #", "# #   #   # # #   # # #   # #   #", "# ### # ##### ### # # # # # # ###", "#   #           # # # # # #   # #", "# # # ######### # # # ### # ### #", "# # #   #     # # # #   # # #   #", "# # ### # ### ### # ### # # ### #", "# # # # # #a#   # # #     #     #", "### # # # # ### # # ##### ##### #", "#   # # #     #   #   #   #   #b#", "# ### # ##### ####### ##### # ###", "#   #     #         #       #   #", "# # ####### ####### ########### #", "# #     #   #     # #           #", "# ##### # ### ####### ######### #", "# #   # # # #   #   # #     #   #", "# # # # # # ### # # # ##### # ###", "#   # #   # #   # # #   #   #   #", "##### ##### # ### # ### # ##### #", "#           #     #     #       #", "#################################" };;
+                char *expected_solved_maze[] = { "#################################", "#*****# #  *****#*******#       #", "#*###*# # #*###*#*#####*### #####", "#***#*#   #***#***#   #***# #   #", "# #*#*#######*##### #####*# # # #", "# #*#*****#***#      *****#   # #", "###*#####*#*#########*######### #", "#***#   #*#***#     #*#*********#", "#*### ###*# #*# ### #*#*#######*#", "#*#   #***# #*#   # #*#***# #***#", "#*### #*#####*### # #*# #*# #*###", "#***#  *******  # # #*# #*#***# #", "# #*# ######### # # #*###*#*### #", "# #*#   #     # # # #***#*#*#   #", "# #*### # ### ### # ###*#*#*### #", "# #*# # # #a#   # # #  ***#*****#", "###*# # # #*### # # ##### #####*#", "#***# # #  ***#   #   #   #   #b#", "#*### # #####*####### ##### # ###", "#***#     #***      #       #   #", "# #*#######*####### ########### #", "# #*****#***#     # #           #", "# #####*#*### ####### ######### #", "# #   #*#*# #   #   # #     #   #", "# # # #*#*# ### # # # ##### # ###", "#   # #***# #   # # #   #   #   #", "##### ##### # ### # ### # ##### #", "#           #     #     #       #", "#################################" };;
+
+                int res = load_maze("fell", &maze);
+
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                int i = 0;
+
+                for (; i < 29; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                res = solve_maze(maze, 11, 15);
+                    
+                test_error(res == 1, "Funkcja solve_maze() powinna zwrócić kod błędu 1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                if (res == 1)
+                {
+                    i = 0;
+        
+                    for (; i < 29; ++i)
+                        test_error(strcmp(expected_solved_maze[i], maze[i]) == 0, "Funkcja solve_maze() błędnie znalazła wyjście z labiryntu w linii %d, powinno być %s, a jest %s", i, expected_solved_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja solve_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+                }
+                else
+                {
+                    i = 0;
+        
+                    for (; i < 29; ++i)
+                        test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja solve_maze() nie powinna modyfikować zawartości labiryntu w przypadku przekazania błędnych danych zmodyfikowany został wiersz %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja solve_maze() błędnie znalazła wyjście z labiryntu w linii %d, powinno być NULL", i);
+                }
+                
+                
+                free_maze(maze);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 38: Sprawdzanie poprawności działania funkcji solve_maze (limit sterty ustawiono na 3400 bajtów)
+//
+void UTEST38(void)
+{
+    // informacje o teście
+    test_start(38, "Sprawdzanie poprawności działania funkcji solve_maze (limit sterty ustawiono na 3400 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(3400);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                char *expected_maze[] = { "#######################################################", "#             #           #           #   #           #", "# ### ####### # ##### ##### # ####### # ### ### ##### #", "#   #       #   #   # #     #   #   # # #   #   #   # #", "### ####### ### # # ### ####### # ### # # ### ##### # #", "# # #       #   # #   # #     # #   # # #   # #   #   #", "# # # ########### ### # # ##### ### # # ### # # # ### #", "# # #       #   # # #   #     #   # # #     #   #   # #", "# # ####### # # # # ######### ### # # ############# # #", "# #       #   # # #           #   # #             # # #", "# ####### ##### # ##### # ##### ### ############# # # #", "#       #     #   #   # #     #   #          a#   # # #", "# # ### ##### ##### # ####### ### ####### # ### ### # #", "# # # # #   #       #           # #     # #         # #", "# # # # ### ################### # # ### ############# #", "# # # #     #     #           # #   # #       #   #   #", "### # ##### # ### # ##### ### # ##### ####### # # ### #", "#   # #     # #   #   #   #   #     #       #   #   # #", "# ### # ##### # ####### ### ####### ### ### ####### # #", "# #         # # #       #   #     #   # # #     #   # #", "# ######### # # # # ##### ### ### ### # # ##### # ### #", "# #     #     #   # #   #   #   #   # # #     # # # # #", "# # ### ### ####### # # ### ### ### # # ### ### # # # #", "# #   #   # #     # # #   # #   #   # #   # #   # #   #", "# ### ### # # ### # # ### # # ### ### ### # # ### # ###", "# #   # # # #   # # # #   #   # # # # #   # # #   # # #", "# # ### # ##### # ### # # ##### # # # # ### # # ### # #", "# #   # #       #     # # #   #     # #   #   # # #   #", "# ### # ############### ### # ####### ### # ### # ### #", "#   # #   #         #   #   #   #     #   #   # #   # #", "# # # ### # ####### # ### ##### # ##### ##### # ### # #", "# # #   #     #     #   #     #   #         # #   #   #", "# ##### # ##### ### ### ##### ############# # ### # ###", "#     # #   #   #   # #     # #       #     #   # #   #", "# # # # ### # ### ### # ##### # ##### # ##### ### ### #", "# # # # # # # #       # #     # #   # # #   # #   #   #", "# # ### # # # ######### # ##### ### # # # ### # #######", "# # #   # # #         #   #  b#   #   # # #   #       #", "# # # ### # ######### ##### ### # ### # # # ######### #", "# #   #           # #           #   #   #   #       # #", "# ##### ######### # ############# # ##### ##### ##### #", "#   #   #     # #   #           # # #   # #     #     #", "### ##### ### # ### # ######### ### # # # # ### # #####", "#   #     # # #     #   #   #   #   # # #   # # #   # #", "# ### ##### # # ####### # ### ### ### ####### # ##### #", "#   #   #     #   #     #     #   #       #   #   #   #", "### # # ### ### ### ##### ##### ### ### # ### ### ### #", "#   # #   #   # #   #   # #     # #   # #       #     #", "# ##### # ### # # ### ### # ##### ### # # ########### #", "# #   # # # # # # # #     # # #     # # # #         # #", "# # # ### # # ### # # ##### # # ### # # ### ##### ### #", "#   #     #       #         #     #   #         #     #", "#######################################################" };;
+                char *expected_solved_maze[] = { "#######################################################", "#*****        #           #***********#   #           #", "#*###*####### # ##### #####*# #######*# ### ### ##### #", "#***#*******#   #***# #*****#   #   #*# #   #   #   # #", "###*#######*### #*#*###*####### # ###*# # ### ##### # #", "# #*#*******#   #*#***#*#     # #   #*# #   # #   #   #", "# #*#*###########*###*#*# ##### ### #*# ### # # # ### #", "# #*#*******#***#*# #***#     #   # #*#     #   #   # #", "# #*#######*#*#*#*# ######### ### # #*############# # #", "# #*******#***#*#*#           #   # #*************# # #", "# #######*#####*#*##### # ##### ### #############*# # #", "#       #*****#***#***# #     #   #        **a#***# # #", "# # ### #####*#####*#*####### ### ####### #*###*### # #", "# # # # #   #*******#***********# #     # #*****    # #", "# # # # ### ###################*# # ### ############# #", "# # # #     #     #           #*#   # #       #   #   #", "### # ##### # ### # ##### ### #*##### ####### # # ### #", "#   # #     # #   #   #   #   #*****#       #   #   # #", "# ### # ##### # ####### ### #######*### ### ####### # #", "# #         # # #       #   #     #***# # #     #   # #", "# ######### # # # # ##### ### ### ###*# # ##### # ### #", "# #*****#     #   # #***#   #   #   #*# #     # # # # #", "# #*###*### ####### #*#*### ### ### #*# ### ### # # # #", "# #***#***# #*****# #*#***# #   #   #*#   # #   # #   #", "# ###*###*# #*###*# #*###*# # ### ###*### # # ### # ###", "# #***# #*# #***#*# #*#***#   # # # #*#   # # #   # # #", "# #*### #*#####*#*###*#*# ##### # # #*# ### # # ### # #", "# #***# #*******#*****#*# #***#     #*#   #   # # #   #", "# ###*# ###############*###*#*#######*### # ### # ### #", "#   #*#   #         #***#***#***#*****#   #   # #   # #", "# # #*### # ####### #*###*#####*#*##### ##### # ### # #", "# # #***#     #     #***#*****#***#         # #   #   #", "# #####*# ##### ### ###*#####*############# # ### # ###", "#***  #*#   #   #   # #*    #*#       #     #   # #   #", "#*#*# #*### # ### ### #*#####*# ##### # ##### ### ### #", "#*#*# #*# # # #       #*#*****# #   # # #   # #   #   #", "#*#*###*# # # #########*#*##### ### # # # ### # #######", "#*#*#***# # #         #***#**b#***#   # # #   #       #", "#*#*#*### # ######### #####*###*#*### # # # ######### #", "#*#***#           # #      *****#***#   #   #       # #", "#*##### ######### # ############# #*##### ##### ##### #", "#***#   #*****# #   #***********# #*#   # #     #     #", "###*#####*###*# ### #*#########*###*# # # # ### # #####", "#***#*****# #*#     #***#   #***#***# # #   # # #   # #", "#*###*##### #*# #######*# ###*###*### ####### # ##### #", "#***#***#  ***#   #*****#*****#***#       #   #   #   #", "###*# #*###*### ###*#####*#####*### ### # ### ### ### #", "#***# #***#***# #***#   #*#*****# #   # #       #     #", "#*##### #*###*# #*### ###*#*##### ### # # ########### #", "#*#***# #*# #*# #*# #*****#*# #     # # # #         # #", "#*#*#*###*# #*###*# #*#####*# # ### # # ### ##### ### #", "#***#*****#  *****#  *******#     #   #         #     #", "#######################################################" };;
+
+                int res = load_maze("paragraph", &maze);
+
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                int i = 0;
+
+                for (; i < 53; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                res = solve_maze(maze, 45, 11);
+                    
+                test_error(res == 1, "Funkcja solve_maze() powinna zwrócić kod błędu 1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                if (res == 1)
+                {
+                    i = 0;
+        
+                    for (; i < 53; ++i)
+                        test_error(strcmp(expected_solved_maze[i], maze[i]) == 0, "Funkcja solve_maze() błędnie znalazła wyjście z labiryntu w linii %d, powinno być %s, a jest %s", i, expected_solved_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja solve_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+                }
+                else
+                {
+                    i = 0;
+        
+                    for (; i < 53; ++i)
+                        test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja solve_maze() nie powinna modyfikować zawartości labiryntu w przypadku przekazania błędnych danych zmodyfikowany został wiersz %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja solve_maze() błędnie znalazła wyjście z labiryntu w linii %d, powinno być NULL", i);
+                }
+                
+                
+                free_maze(maze);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 39: Sprawdzanie poprawności działania funkcji solve_maze (limit sterty ustawiono na 1542 bajtów)
+//
+void UTEST39(void)
+{
+    // informacje o teście
+    test_start(39, "Sprawdzanie poprawności działania funkcji solve_maze (limit sterty ustawiono na 1542 bajtów)", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(1542);
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                char *expected_maze[] = { "#################", "#   #   #       #", "# # # # ### ### #", "# # # #     # # #", "# # # ####### # #", "# # #     # #   #", "# # ##### # # ###", "# #     # # #   #", "##### # # # ### #", "#     # # #   # #", "# ####### # # # #", "# #     # # #   #", "# # ### ### #####", "#    b#   #   # #", "####### # ### # #", "#       # #   # #", "# ######### ### #", "# #   #     #   #", "# # # # ##### # #", "#   #   #     # #", "# ####### ### # #", "# #       # # # #", "# ### ##### # # #", "#   #   #   # # #", "### ### # ### # #", "#   # # # #   # #", "# ### # # # ### #", "# #   #   # # # #", "# ### ### # # # #", "#   #     # # # #", "### ####### # # #", "#   #   #   # # #", "# ### # # ### # #", "#     # # #     #", "####### # # #####", "#a    #   # #   #", "##### ##### # # #", "#   #   # #   # #", "# # # # # ##### #", "# #   # #     # #", "# ##### ### # # #", "# #   # #   # # #", "# ### # # ##### #", "#   #   # #     #", "### # ### # #####", "#   #   # # #   #", "# ##### # # ### #", "# # #     #     #", "# # # ######### #", "# #   #       # #", "# ##### ##### # #", "#     # #   #   #", "# ### # # #######", "#   # # #     # #", "##### # ### # # #", "#     #     #   #", "# ############# #", "#               #", "#################" };;
+                char *expected_solved_maze[] = { "#################", "#   #   #       #", "# # # # ### ### #", "# # # #     # # #", "# # # ####### # #", "# # #     # #   #", "# # ##### # # ###", "# #     # # #   #", "##### # # # ### #", "#     # # #   # #", "# ####### # # # #", "# #*****# # #   #", "# #*###*### #####", "#  **b#*  #   # #", "#######*# ### # #", "#*******# #   # #", "#*######### ### #", "#*#   #     #***#", "#*# # # #####*#*#", "#*  #   #    *#*#", "#*####### ###*#*#", "#*#       # #*#*#", "#*### ##### #*#*#", "#***#   #   #*#*#", "###*### # ###*#*#", "#***# # # #***#*#", "#*### # # #*###*#", "#*#   #   #*# #*#", "#*### ### #*# #*#", "#***#     #*# #*#", "###*#######*# #*#", "#***#***#***# #*#", "#*###*#*#*### #*#", "#*****#*#*#*****#", "#######*#*#*#####", "#a****#***#*#***#", "#####*#####*#*#*#", "#***#*  # #***#*#", "#*#*#*# # #####*#", "#*#***# #     #*#", "#*##### ### # #*#", "#*#   # #   # #*#", "#*### # # #####*#", "#***#   # #*****#", "###*# ### #*#####", "#***#   # #*#   #", "#*##### # #*### #", "#*# #     #*****#", "#*# # #########*#", "#*#   #*******#*#", "#*#####*#####*#*#", "#*****#*#   #***#", "# ###*#*# #######", "#   #*#*#  ***# #", "#####*#*###*#*# #", "#*****#*****#***#", "#*#############*#", "#***************#", "#################" };;
+
+                int res = load_maze("city", &maze);
+
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                int i = 0;
+
+                for (; i < 59; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                res = solve_maze(maze, 1, 35);
+                    
+                test_error(res == 1, "Funkcja solve_maze() powinna zwrócić kod błędu 1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                if (res == 1)
+                {
+                    i = 0;
+        
+                    for (; i < 59; ++i)
+                        test_error(strcmp(expected_solved_maze[i], maze[i]) == 0, "Funkcja solve_maze() błędnie znalazła wyjście z labiryntu w linii %d, powinno być %s, a jest %s", i, expected_solved_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja solve_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+                }
+                else
+                {
+                    i = 0;
+        
+                    for (; i < 59; ++i)
+                        test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja solve_maze() nie powinna modyfikować zawartości labiryntu w przypadku przekazania błędnych danych zmodyfikowany został wiersz %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja solve_maze() błędnie znalazła wyjście z labiryntu w linii %d, powinno być NULL", i);
+                }
+                
+                
+                free_maze(maze);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 40: Sprawdzanie poprawności działania funkcji solve_maze
+//
+void UTEST40(void)
+{
+    // informacje o teście
+    test_start(40, "Sprawdzanie poprawności działania funkcji solve_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                char *expected_maze[] = { "###################", "#     #   #       #", "# ##### ### ##### #", "#   #a       b#   #", "### ########### ###", "#   #         #   #", "# ### ####### # # #", "# #   # #     # # #", "# ### # # ####### #", "# #   #   #       #", "# # ### ##### ### #", "#   #         #   #", "###################" };;
+                char *expected_solved_maze[] = { "NONE" };;
+
+                int res = load_maze("meet", &maze);
+
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                int i = 0;
+
+                for (; i < 13; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                res = solve_maze(maze, 17, 13);
+                    
+                test_error(res == -1, "Funkcja solve_maze() powinna zwrócić kod błędu -1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                if (res == 1)
+                {
+                    i = 0;
+        
+                    for (; i < 13; ++i)
+                        test_error(strcmp(expected_solved_maze[i], maze[i]) == 0, "Funkcja solve_maze() błędnie znalazła wyjście z labiryntu w linii %d, powinno być %s, a jest %s", i, expected_solved_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja solve_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+                }
+                else
+                {
+                    i = 0;
+        
+                    for (; i < 13; ++i)
+                        test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja solve_maze() nie powinna modyfikować zawartości labiryntu w przypadku przekazania błędnych danych zmodyfikowany został wiersz %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja solve_maze() błędnie znalazła wyjście z labiryntu w linii %d, powinno być NULL", i);
+                }
+                
+                
+                free_maze(maze);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 41: Sprawdzanie poprawności działania funkcji solve_maze
+//
+void UTEST41(void)
+{
+    // informacje o teście
+    test_start(41, "Sprawdzanie poprawności działania funkcji solve_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                char *expected_maze[] = { "###################", "#       #   #   #b#", "# ### ### # # # # #", "#   #     #   # # #", "### ########### # #", "# # #       #   # #", "# # # # ##### ### #", "#   # #a#   # #   #", "# ### ##### # # # #", "#   #     #   # # #", "### ##### ##### # #", "#               # #", "###################" };;
+                char *expected_solved_maze[] = { "NONE" };;
+
+                int res = load_maze("new", &maze);
+
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                int i = 0;
+
+                for (; i < 13; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                res = solve_maze(maze, 19, 11);
+                    
+                test_error(res == -1, "Funkcja solve_maze() powinna zwrócić kod błędu -1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                if (res == 1)
+                {
+                    i = 0;
+        
+                    for (; i < 13; ++i)
+                        test_error(strcmp(expected_solved_maze[i], maze[i]) == 0, "Funkcja solve_maze() błędnie znalazła wyjście z labiryntu w linii %d, powinno być %s, a jest %s", i, expected_solved_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja solve_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+                }
+                else
+                {
+                    i = 0;
+        
+                    for (; i < 13; ++i)
+                        test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja solve_maze() nie powinna modyfikować zawartości labiryntu w przypadku przekazania błędnych danych zmodyfikowany został wiersz %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja solve_maze() błędnie znalazła wyjście z labiryntu w linii %d, powinno być NULL", i);
+                }
+                
+                
+                free_maze(maze);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 42: Sprawdzanie poprawności działania funkcji solve_maze
+//
+void UTEST42(void)
+{
+    // informacje o teście
+    test_start(42, "Sprawdzanie poprawności działania funkcji solve_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                char *expected_maze[] = { "###################", "#             #   #", "# ########### # # #", "#       #   #   # #", "####### # # ##### #", "#   #a#   # #   # #", "# # # ##### # # # #", "# #   #   # # #   #", "# ##### # # # #####", "#       # # #     #", "######### # ##### #", "#           #b    #", "###################" };;
+                char *expected_solved_maze[] = { "NONE" };;
+
+                int res = load_maze("will", &maze);
+
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                int i = 0;
+
+                for (; i < 13; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                res = solve_maze(maze, 17, -13);
+                    
+                test_error(res == -1, "Funkcja solve_maze() powinna zwrócić kod błędu -1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                if (res == 1)
+                {
+                    i = 0;
+        
+                    for (; i < 13; ++i)
+                        test_error(strcmp(expected_solved_maze[i], maze[i]) == 0, "Funkcja solve_maze() błędnie znalazła wyjście z labiryntu w linii %d, powinno być %s, a jest %s", i, expected_solved_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja solve_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+                }
+                else
+                {
+                    i = 0;
+        
+                    for (; i < 13; ++i)
+                        test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja solve_maze() nie powinna modyfikować zawartości labiryntu w przypadku przekazania błędnych danych zmodyfikowany został wiersz %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja solve_maze() błędnie znalazła wyjście z labiryntu w linii %d, powinno być NULL", i);
+                }
+                
+                
+                free_maze(maze);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 43: Sprawdzanie poprawności działania funkcji solve_maze
+//
+void UTEST43(void)
+{
+    // informacje o teście
+    test_start(43, "Sprawdzanie poprawności działania funkcji solve_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+
+                char **maze;
+                char *expected_maze[] = { "###################", "#     #         #a#", "# ### # ####### # #", "#   #   #     #   #", "# # ##### ### #####", "# # #   #   #     #", "### # # ### ##### #", "#   # #   # #b#   #", "# ### ### ### # ###", "#     #   #   #   #", "# ##### ### # ### #", "#     #     #     #", "###################" };;
+                char *expected_solved_maze[] = { "NONE" };;
+
+                int res = load_maze("magnet", &maze);
+
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                int i = 0;
+
+                for (; i < 13; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                res = solve_maze(maze, -19, 11);
+                    
+                test_error(res == -1, "Funkcja solve_maze() powinna zwrócić kod błędu -1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+
+                if (res == 1)
+                {
+                    i = 0;
+        
+                    for (; i < 13; ++i)
+                        test_error(strcmp(expected_solved_maze[i], maze[i]) == 0, "Funkcja solve_maze() błędnie znalazła wyjście z labiryntu w linii %d, powinno być %s, a jest %s", i, expected_solved_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja solve_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+                }
+                else
+                {
+                    i = 0;
+        
+                    for (; i < 13; ++i)
+                        test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja solve_maze() nie powinna modyfikować zawartości labiryntu w przypadku przekazania błędnych danych zmodyfikowany został wiersz %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                    test_error(NULL == maze[i], "Funkcja solve_maze() błędnie znalazła wyjście z labiryntu w linii %d, powinno być NULL", i);
+                }
+                
+                
+                free_maze(maze);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 44: Sprawdzanie poprawności działania funkcji solve_maze
+//
+void UTEST44(void)
+{
+    // informacje o teście
+    test_start(44, "Sprawdzanie poprawności działania funkcji solve_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+        
+                char **maze;
+                char *expected_maze[] = { "###########", "#   #     #", "# ### ### #", "# #   #a  #", "# # #######", "# # #     #", "# # # ### #", "# # # #   #", "# # # # ###", "# #   #   #", "# ####### #", "#   #   # #", "# # # # # #", "# #   #   #", "# #########", "#        b#", "###########" };;
+        
+                int res = load_maze("tell", &maze);
+        
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                int i = 0;
+        
+                for (; i < 17; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                maze[0][1] = '\0';
+        
+                res = solve_maze(maze, 7, 3);
+        
+                test_error(res == -1, "Funkcja solve_maze() powinna zwrócić kod błędu -1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                free_maze(maze);
+        
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 45: Sprawdzanie poprawności działania funkcji solve_maze
+//
+void UTEST45(void)
+{
+    // informacje o teście
+    test_start(45, "Sprawdzanie poprawności działania funkcji solve_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+        
+                char **maze;
+                char *expected_maze[] = { "###########", "#   #     #", "# ### ### #", "# #   #a  #", "# # #######", "# # #     #", "# # # ### #", "# # # #   #", "# # # # ###", "# #   #   #", "# ####### #", "#   #   # #", "# # # # # #", "# #   #   #", "# #########", "#        b#", "###########" };;
+        
+                int res = load_maze("tell", &maze);
+        
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                int i = 0;
+        
+                for (; i < 17; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                maze[1][1] = '\0';
+        
+                res = solve_maze(maze, 7, 3);
+        
+                test_error(res == -1, "Funkcja solve_maze() powinna zwrócić kod błędu -1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                free_maze(maze);
+        
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 46: Sprawdzanie poprawności działania funkcji solve_maze
+//
+void UTEST46(void)
+{
+    // informacje o teście
+    test_start(46, "Sprawdzanie poprawności działania funkcji solve_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+        
+                char **maze;
+                char *expected_maze[] = { "###########", "#   #     #", "# ### ### #", "# #   #a  #", "# # #######", "# # #     #", "# # # ### #", "# # # #   #", "# # # # ###", "# #   #   #", "# ####### #", "#   #   # #", "# # # # # #", "# #   #   #", "# #########", "#        b#", "###########" };;
+        
+                int res = load_maze("tell", &maze);
+        
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                int i = 0;
+        
+                for (; i < 17; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                maze[2][10] = '\0';
+        
+                res = solve_maze(maze, 7, 3);
+        
+                test_error(res == -1, "Funkcja solve_maze() powinna zwrócić kod błędu -1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                free_maze(maze);
+        
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 47: Sprawdzanie poprawności działania funkcji solve_maze
+//
+void UTEST47(void)
+{
+    // informacje o teście
+    test_start(47, "Sprawdzanie poprawności działania funkcji solve_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+        
+                char **maze;
+                char *expected_maze[] = { "###########", "#   #     #", "# ### ### #", "# #   #a  #", "# # #######", "# # #     #", "# # # ### #", "# # # #   #", "# # # # ###", "# #   #   #", "# ####### #", "#   #   # #", "# # # # # #", "# #   #   #", "# #########", "#        b#", "###########" };;
+        
+                int res = load_maze("tell", &maze);
+        
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                int i = 0;
+        
+                for (; i < 17; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                maze[3][5] = '\0';
+        
+                res = solve_maze(maze, 7, 3);
+        
+                test_error(res == -1, "Funkcja solve_maze() powinna zwrócić kod błędu -1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                free_maze(maze);
+        
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 48: Sprawdzanie poprawności działania funkcji solve_maze
+//
+void UTEST48(void)
+{
+    // informacje o teście
+    test_start(48, "Sprawdzanie poprawności działania funkcji solve_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+        
+                char **maze;
+                char *expected_maze[] = { "###########", "#   #     #", "# ### ### #", "# #   #a  #", "# # #######", "# # #     #", "# # # ### #", "# # # #   #", "# # # # ###", "# #   #   #", "# ####### #", "#   #   # #", "# # # # # #", "# #   #   #", "# #########", "#        b#", "###########" };;
+        
+                int res = load_maze("tell", &maze);
+        
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                int i = 0;
+        
+                for (; i < 17; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                maze[4][3] = '\0';
+        
+                res = solve_maze(maze, 7, 3);
+        
+                test_error(res == -1, "Funkcja solve_maze() powinna zwrócić kod błędu -1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                free_maze(maze);
+        
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 49: Sprawdzanie poprawności działania funkcji solve_maze
+//
+void UTEST49(void)
+{
+    // informacje o teście
+    test_start(49, "Sprawdzanie poprawności działania funkcji solve_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+        
+                char **maze;
+                char *expected_maze[] = { "###########", "#   #     #", "# ### ### #", "# #   #a  #", "# # #######", "# # #     #", "# # # ### #", "# # # #   #", "# # # # ###", "# #   #   #", "# ####### #", "#   #   # #", "# # # # # #", "# #   #   #", "# #########", "#        b#", "###########" };;
+        
+                int res = load_maze("tell", &maze);
+        
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                int i = 0;
+        
+                for (; i < 17; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                maze[5][9] = '\0';
+        
+                res = solve_maze(maze, 7, 3);
+        
+                test_error(res == -1, "Funkcja solve_maze() powinna zwrócić kod błędu -1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                free_maze(maze);
+        
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 50: Sprawdzanie poprawności działania funkcji solve_maze
+//
+void UTEST50(void)
+{
+    // informacje o teście
+    test_start(50, "Sprawdzanie poprawności działania funkcji solve_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+        
+                char **maze;
+                char *expected_maze[] = { "###########", "#   #     #", "# ### ### #", "# #   #a  #", "# # #######", "# # #     #", "# # # ### #", "# # # #   #", "# # # # ###", "# #   #   #", "# ####### #", "#   #   # #", "# # # # # #", "# #   #   #", "# #########", "#        b#", "###########" };;
+        
+                int res = load_maze("tell", &maze);
+        
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                int i = 0;
+        
+                for (; i < 17; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                maze[6][6] = '\0';
+        
+                res = solve_maze(maze, 7, 3);
+        
+                test_error(res == -1, "Funkcja solve_maze() powinna zwrócić kod błędu -1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                free_maze(maze);
+        
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 51: Sprawdzanie poprawności działania funkcji solve_maze
+//
+void UTEST51(void)
+{
+    // informacje o teście
+    test_start(51, "Sprawdzanie poprawności działania funkcji solve_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+        
+                char **maze;
+                char *expected_maze[] = { "###########", "#   #     #", "# ### ### #", "# #   #a  #", "# # #######", "# # #     #", "# # # ### #", "# # # #   #", "# # # # ###", "# #   #   #", "# ####### #", "#   #   # #", "# # # # # #", "# #   #   #", "# #########", "#        b#", "###########" };;
+        
+                int res = load_maze("tell", &maze);
+        
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                int i = 0;
+        
+                for (; i < 17; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                maze[7][9] = '\0';
+        
+                res = solve_maze(maze, 7, 3);
+        
+                test_error(res == -1, "Funkcja solve_maze() powinna zwrócić kod błędu -1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                free_maze(maze);
+        
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 52: Sprawdzanie poprawności działania funkcji solve_maze
+//
+void UTEST52(void)
+{
+    // informacje o teście
+    test_start(52, "Sprawdzanie poprawności działania funkcji solve_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+        
+                char **maze;
+                char *expected_maze[] = { "###########", "#   #     #", "# ### ### #", "# #   #a  #", "# # #######", "# # #     #", "# # # ### #", "# # # #   #", "# # # # ###", "# #   #   #", "# ####### #", "#   #   # #", "# # # # # #", "# #   #   #", "# #########", "#        b#", "###########" };;
+        
+                int res = load_maze("tell", &maze);
+        
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                int i = 0;
+        
+                for (; i < 17; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                maze[8][8] = '\0';
+        
+                res = solve_maze(maze, 7, 3);
+        
+                test_error(res == -1, "Funkcja solve_maze() powinna zwrócić kod błędu -1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                free_maze(maze);
+        
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 53: Sprawdzanie poprawności działania funkcji solve_maze
+//
+void UTEST53(void)
+{
+    // informacje o teście
+    test_start(53, "Sprawdzanie poprawności działania funkcji solve_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+        
+                char **maze;
+                char *expected_maze[] = { "###########", "#   #     #", "# ### ### #", "# #   #a  #", "# # #######", "# # #     #", "# # # ### #", "# # # #   #", "# # # # ###", "# #   #   #", "# ####### #", "#   #   # #", "# # # # # #", "# #   #   #", "# #########", "#        b#", "###########" };;
+        
+                int res = load_maze("tell", &maze);
+        
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                int i = 0;
+        
+                for (; i < 17; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                maze[9][2] = '\0';
+        
+                res = solve_maze(maze, 7, 3);
+        
+                test_error(res == -1, "Funkcja solve_maze() powinna zwrócić kod błędu -1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                free_maze(maze);
+        
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 54: Sprawdzanie poprawności działania funkcji solve_maze
+//
+void UTEST54(void)
+{
+    // informacje o teście
+    test_start(54, "Sprawdzanie poprawności działania funkcji solve_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+        
+                char **maze;
+                char *expected_maze[] = { "###########", "#   #     #", "# ### ### #", "# #   #a  #", "# # #######", "# # #     #", "# # # ### #", "# # # #   #", "# # # # ###", "# #   #   #", "# ####### #", "#   #   # #", "# # # # # #", "# #   #   #", "# #########", "#        b#", "###########" };;
+        
+                int res = load_maze("tell", &maze);
+        
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                int i = 0;
+        
+                for (; i < 17; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                maze[10][5] = '\0';
+        
+                res = solve_maze(maze, 7, 3);
+        
+                test_error(res == -1, "Funkcja solve_maze() powinna zwrócić kod błędu -1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                free_maze(maze);
+        
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 55: Sprawdzanie poprawności działania funkcji solve_maze
+//
+void UTEST55(void)
+{
+    // informacje o teście
+    test_start(55, "Sprawdzanie poprawności działania funkcji solve_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+        
+                char **maze;
+                char *expected_maze[] = { "###########", "#   #     #", "# ### ### #", "# #   #a  #", "# # #######", "# # #     #", "# # # ### #", "# # # #   #", "# # # # ###", "# #   #   #", "# ####### #", "#   #   # #", "# # # # # #", "# #   #   #", "# #########", "#        b#", "###########" };;
+        
+                int res = load_maze("tell", &maze);
+        
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                int i = 0;
+        
+                for (; i < 17; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                maze[11][9] = '\0';
+        
+                res = solve_maze(maze, 7, 3);
+        
+                test_error(res == -1, "Funkcja solve_maze() powinna zwrócić kod błędu -1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                free_maze(maze);
+        
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 56: Sprawdzanie poprawności działania funkcji solve_maze
+//
+void UTEST56(void)
+{
+    // informacje o teście
+    test_start(56, "Sprawdzanie poprawności działania funkcji solve_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+        
+                char **maze;
+                char *expected_maze[] = { "###########", "#   #     #", "# ### ### #", "# #   #a  #", "# # #######", "# # #     #", "# # # ### #", "# # # #   #", "# # # # ###", "# #   #   #", "# ####### #", "#   #   # #", "# # # # # #", "# #   #   #", "# #########", "#        b#", "###########" };;
+        
+                int res = load_maze("tell", &maze);
+        
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                int i = 0;
+        
+                for (; i < 17; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                maze[12][10] = '\0';
+        
+                res = solve_maze(maze, 7, 3);
+        
+                test_error(res == -1, "Funkcja solve_maze() powinna zwrócić kod błędu -1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                free_maze(maze);
+        
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 57: Sprawdzanie poprawności działania funkcji solve_maze
+//
+void UTEST57(void)
+{
+    // informacje o teście
+    test_start(57, "Sprawdzanie poprawności działania funkcji solve_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+        
+                char **maze;
+                char *expected_maze[] = { "###########", "#   #     #", "# ### ### #", "# #   #a  #", "# # #######", "# # #     #", "# # # ### #", "# # # #   #", "# # # # ###", "# #   #   #", "# ####### #", "#   #   # #", "# # # # # #", "# #   #   #", "# #########", "#        b#", "###########" };;
+        
+                int res = load_maze("tell", &maze);
+        
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                int i = 0;
+        
+                for (; i < 17; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                maze[13][7] = '\0';
+        
+                res = solve_maze(maze, 7, 3);
+        
+                test_error(res == -1, "Funkcja solve_maze() powinna zwrócić kod błędu -1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                free_maze(maze);
+        
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 58: Sprawdzanie poprawności działania funkcji solve_maze
+//
+void UTEST58(void)
+{
+    // informacje o teście
+    test_start(58, "Sprawdzanie poprawności działania funkcji solve_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+        
+                char **maze;
+                char *expected_maze[] = { "###########", "#   #     #", "# ### ### #", "# #   #a  #", "# # #######", "# # #     #", "# # # ### #", "# # # #   #", "# # # # ###", "# #   #   #", "# ####### #", "#   #   # #", "# # # # # #", "# #   #   #", "# #########", "#        b#", "###########" };;
+        
+                int res = load_maze("tell", &maze);
+        
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                int i = 0;
+        
+                for (; i < 17; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                maze[14][7] = '\0';
+        
+                res = solve_maze(maze, 7, 3);
+        
+                test_error(res == -1, "Funkcja solve_maze() powinna zwrócić kod błędu -1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                free_maze(maze);
+        
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 59: Sprawdzanie poprawności działania funkcji solve_maze
+//
+void UTEST59(void)
+{
+    // informacje o teście
+    test_start(59, "Sprawdzanie poprawności działania funkcji solve_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+        
+                char **maze;
+                char *expected_maze[] = { "###########", "#   #     #", "# ### ### #", "# #   #a  #", "# # #######", "# # #     #", "# # # ### #", "# # # #   #", "# # # # ###", "# #   #   #", "# ####### #", "#   #   # #", "# # # # # #", "# #   #   #", "# #########", "#        b#", "###########" };;
+        
+                int res = load_maze("tell", &maze);
+        
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                int i = 0;
+        
+                for (; i < 17; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                maze[15][7] = '\0';
+        
+                res = solve_maze(maze, 7, 3);
+        
+                test_error(res == -1, "Funkcja solve_maze() powinna zwrócić kod błędu -1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                free_maze(maze);
+        
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 60: Sprawdzanie poprawności działania funkcji solve_maze
+//
+void UTEST60(void)
+{
+    // informacje o teście
+    test_start(60, "Sprawdzanie poprawności działania funkcji solve_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+        
+                char **maze;
+                char *expected_maze[] = { "###########", "#   #     #", "# ### ### #", "# #   #a  #", "# # #######", "# # #     #", "# # # ### #", "# # # #   #", "# # # # ###", "# #   #   #", "# ####### #", "#   #   # #", "# # # # # #", "# #   #   #", "# #########", "#        b#", "###########" };;
+        
+                int res = load_maze("tell", &maze);
+        
+                test_error(maze != NULL, "Funkcja load_maze() przypisać adres zaalokowanej pamieci, a przypisałą NULL");
+                test_error(res == 0, "Funkcja load_maze() powinna zwrócić kod błędu 0, a zwróciła %d", res);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                int i = 0;
+        
+                for (; i < 17; ++i)
+                    test_error(strcmp(expected_maze[i], maze[i]) == 0, "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być %s, a jest %s", i, expected_maze[i], maze[i]);
+        
+                test_error(NULL == maze[i], "Funkcja load_maze() błędnie odczytała dane z pliku w linii %d, powinno być NULL", i);
+        
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                maze[16][7] = '\0';
+        
+                res = solve_maze(maze, 7, 3);
+        
+                test_error(res == -1, "Funkcja solve_maze() powinna zwrócić kod błędu -1, a zwróciła %d", res);
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+                free_maze(maze);
+        
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 61: Sprawdzanie poprawności działania funkcji solve_maze
+//
+void UTEST61(void)
+{
+    // informacje o teście
+    test_start(61, "Sprawdzanie poprawności działania funkcji solve_maze", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    
+    //
+    // -----------
+    //
+    
+
+                int res = solve_maze(NULL, 1, 2);
+
+                test_error(res == -1, "Funkcja solve_maze() powinna zwrócić kod błędu -1, a zwróciła %d", res);
+
+                test_no_heap_leakage();
+                onerror_terminate(); // przerwnie wszystkich testów jednostkowych (np. coś jest mocno nie tak z kodem)
+        
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+
+
+//
+//  Test 1: Reakcja na brak pamięci; limit ustawiono na 0 bajtów
+//
+void MTEST1(int argc, char** argv, char** envp)
+{
+    // informacje o teście
+    test_start(1, "Reakcja na brak pamięci; limit ustawiono na 0 bajtów", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(0);
+    
+    //
+    // -----------
+    //
+    
+                printf("***START***\n");
+                int ret_code = rdebug_call_main(tested_main, argc, argv, envp);
+                printf("\n***END***\n");
+                test_error(ret_code == 8, "Funkcja main zakończyła się kodem %d a powinna 8", ret_code);
+                test_no_heap_leakage();
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 2: Reakcja na brak pamięci; limit ustawiono na 31 bajtów
+//
+void MTEST2(int argc, char** argv, char** envp)
+{
+    // informacje o teście
+    test_start(2, "Reakcja na brak pamięci; limit ustawiono na 31 bajtów", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(31);
+    
+    //
+    // -----------
+    //
+    
+                printf("***START***\n");
+                int ret_code = rdebug_call_main(tested_main, argc, argv, envp);
+                printf("\n***END***\n");
+                test_error(ret_code == 8, "Funkcja main zakończyła się kodem %d a powinna 8", ret_code);
+                test_no_heap_leakage();
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 3: Reakcja na brak pamięci; limit ustawiono na 292 bajtów
+//
+void MTEST3(int argc, char** argv, char** envp)
+{
+    // informacje o teście
+    test_start(3, "Reakcja na brak pamięci; limit ustawiono na 292 bajtów", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(292);
+    
+    //
+    // -----------
+    //
+    
+                printf("***START***\n");
+                int ret_code = rdebug_call_main(tested_main, argc, argv, envp);
+                printf("\n***END***\n");
+                test_error(ret_code == 8, "Funkcja main zakończyła się kodem %d a powinna 8", ret_code);
+                test_no_heap_leakage();
+            
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+//
+//  Test 4: Reakcja na brak pamięci; limit ustawiono na 380 bajtów
+//
+void MTEST4(int argc, char** argv, char** envp)
+{
+    // informacje o teście
+    test_start(4, "Reakcja na brak pamięci; limit ustawiono na 380 bajtów", __LINE__);
+
+    // uwarunkowanie zasobów - pamięci, itd...
+    test_file_write_limit_setup(33554432);
+    rldebug_reset_limits();
+    rldebug_heap_set_global_limit(380);
+    
+    //
+    // -----------
+    //
+    
+            printf("***START***\n");
+            int ret_code = rdebug_call_main(tested_main, argc, argv, envp);
+            printf("\n***END***\n");
+            test_error(ret_code == 0, "Funkcja main zakończyła się kodem %d a powinna 0", ret_code);
+            test_no_heap_leakage();
+        
+    //
+    // -----------
+    //
+
+    // przywrócenie podstawowych parametów przydzielania zasobów (jeśli to tylko możliwe)
+    rldebug_reset_limits();
+    test_file_write_limit_restore();
+    
+    test_ok();
+}
+
+
+enum run_mode_t { rm_normal_with_rld = 0, rm_unit_test = 1, rm_main_test = 2 };
+
+int __wrap_main(volatile int _argc, char** _argv, char** _envp)
+{
+    int volatile vargc = _argc;
+    char ** volatile vargv = _argv, ** volatile venvp = _envp;
+    volatile enum run_mode_t run_mode = rm_unit_test; // -1
+    volatile int selected_test = -1;
+
+    if (vargc > 1)
+    {
+        char* smode = strtok(vargv[1], ",");
+        char* stest = strtok(NULL, "");
+        char *errptr = NULL;
+        run_mode = (enum run_mode_t)strtol(smode, &errptr, 10);
+        if (*errptr == '\x0')
+        {
+            memmove(vargv + 1, vargv + 2, sizeof(char*) * (vargc - 1));
+            vargc--;
+
+            if (stest != NULL)
+            {
+                int val = (int)strtol(stest, &errptr, 10);
+                if (*errptr == '\x0')
+                    selected_test = val;
+            }
+        }
+    }
+
+    // printf("runmode=%d; selected_test=%d\n", run_mode, selected_test);
+
+    // inicjuj testy jednostkowe
+    unit_test_init(run_mode, "unit_test_v2.c");
+    test_limit_init();
+    rldebug_set_reported_severity_level(MSL_FAILURE);
+
+    if (run_mode == rm_normal_with_rld)
+    {
+        // konfiguracja ograniczników
+        rldebug_reset_limits();
+        
+
+        // uruchom funkcję main Studenta a potem wyświetl podsumowanie sterty i zasobów
+        volatile int ret_code = rdebug_call_main(tested_main, vargc, vargv, venvp);
+
+        rldebug_reset_limits();
+        
+
+        int leaks_detected = rldebug_show_leaked_resources(0);
+        if (leaks_detected)
+            raise(SIGHEAP);
+
+        return ret_code;
+    }
+
+    
+    if (run_mode == rm_unit_test)
+    {
+        test_title("Testy jednostkowe");
+
+        void (*pfcn[])(void) =
+        { 
+            UTEST1, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 502 bajtów)
+            UTEST2, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 1196 bajtów)
+            UTEST3, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 2932 bajtów)
+            UTEST4, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 1548 bajtów)
+            UTEST5, // Sprawdzanie poprawności działania funkcji load_maze
+            UTEST6, // Sprawdzanie poprawności działania funkcji load_maze
+            UTEST7, // Sprawdzanie poprawności działania funkcji load_maze
+            UTEST8, // Sprawdzanie poprawności działania funkcji load_maze
+            UTEST9, // Sprawdzanie poprawności działania funkcji load_maze
+            UTEST10, // Sprawdzanie poprawności działania funkcji load_maze
+            UTEST11, // Sprawdzanie poprawności działania funkcji load_maze
+            UTEST12, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 0 bajtów)
+            UTEST13, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 176 bajtów)
+            UTEST14, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 188 bajtów)
+            UTEST15, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 200 bajtów)
+            UTEST16, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 212 bajtów)
+            UTEST17, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 224 bajtów)
+            UTEST18, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 236 bajtów)
+            UTEST19, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 248 bajtów)
+            UTEST20, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 260 bajtów)
+            UTEST21, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 272 bajtów)
+            UTEST22, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 284 bajtów)
+            UTEST23, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 296 bajtów)
+            UTEST24, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 308 bajtów)
+            UTEST25, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 320 bajtów)
+            UTEST26, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 332 bajtów)
+            UTEST27, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 344 bajtów)
+            UTEST28, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 356 bajtów)
+            UTEST29, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 368 bajtów)
+            UTEST30, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 380 bajtów)
+            UTEST31, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 392 bajtów)
+            UTEST32, // Sprawdzanie poprawności działania funkcji load_maze (limit sterty ustawiono na 404 bajtów)
+            UTEST33, // Sprawdzanie poprawności działania funkcji load_maze
+            UTEST34, // Sprawdzanie poprawności działania funkcji load_maze
+            UTEST35, // Sprawdzanie poprawności działania funkcji load_maze
+            UTEST36, // Sprawdzanie poprawności działania funkcji solve_maze (limit sterty ustawiono na 540 bajtów)
+            UTEST37, // Sprawdzanie poprawności działania funkcji solve_maze (limit sterty ustawiono na 1226 bajtów)
+            UTEST38, // Sprawdzanie poprawności działania funkcji solve_maze (limit sterty ustawiono na 3400 bajtów)
+            UTEST39, // Sprawdzanie poprawności działania funkcji solve_maze (limit sterty ustawiono na 1542 bajtów)
+            UTEST40, // Sprawdzanie poprawności działania funkcji solve_maze
+            UTEST41, // Sprawdzanie poprawności działania funkcji solve_maze
+            UTEST42, // Sprawdzanie poprawności działania funkcji solve_maze
+            UTEST43, // Sprawdzanie poprawności działania funkcji solve_maze
+            UTEST44, // Sprawdzanie poprawności działania funkcji solve_maze
+            UTEST45, // Sprawdzanie poprawności działania funkcji solve_maze
+            UTEST46, // Sprawdzanie poprawności działania funkcji solve_maze
+            UTEST47, // Sprawdzanie poprawności działania funkcji solve_maze
+            UTEST48, // Sprawdzanie poprawności działania funkcji solve_maze
+            UTEST49, // Sprawdzanie poprawności działania funkcji solve_maze
+            UTEST50, // Sprawdzanie poprawności działania funkcji solve_maze
+            UTEST51, // Sprawdzanie poprawności działania funkcji solve_maze
+            UTEST52, // Sprawdzanie poprawności działania funkcji solve_maze
+            UTEST53, // Sprawdzanie poprawności działania funkcji solve_maze
+            UTEST54, // Sprawdzanie poprawności działania funkcji solve_maze
+            UTEST55, // Sprawdzanie poprawności działania funkcji solve_maze
+            UTEST56, // Sprawdzanie poprawności działania funkcji solve_maze
+            UTEST57, // Sprawdzanie poprawności działania funkcji solve_maze
+            UTEST58, // Sprawdzanie poprawności działania funkcji solve_maze
+            UTEST59, // Sprawdzanie poprawności działania funkcji solve_maze
+            UTEST60, // Sprawdzanie poprawności działania funkcji solve_maze
+            UTEST61, // Sprawdzanie poprawności działania funkcji solve_maze
+            NULL
+        };
+
+        for (int idx = 0; pfcn[idx] != NULL && !test_get_session_termination_flag(); idx++)
+        {
+            if (selected_test == -1 || selected_test == idx + 1)
+                pfcn[idx]();
+
+            // limit niezaliczonych testów, po jakim testy jednostkowe zostaną przerwane
+            if (test_session_get_fail_count() >= 1000)
+                test_terminate_session();
+        }
+
+
+        test_title("RLDebug :: Analiza wycieku zasobów");
+        // sprawdź wycieki pamięci
+        int leaks_detected = rldebug_show_leaked_resources(1);
+        test_set_session_leaks(leaks_detected);
+
+        // poinformuj serwer Mrówka o wyniku testu - podsumowanie
+        test_title("Podsumowanie");
+        if (selected_test == -1)
+            test_summary(61); // wszystkie testy muszą zakończyć się sukcesem
+        else
+            test_summary(1); // tylko jeden (selected_test) test musi zakończyć się  sukcesem
+        return EXIT_SUCCESS;
+    }
+    
+
+    if (run_mode == rm_main_test)
+    {
+        test_title("Testy funkcji main()");
+
+        void (*pfcn[])(int, char**, char**) =
+        { 
+            MTEST1, // Reakcja na brak pamięci; limit ustawiono na 0 bajtów
+            MTEST2, // Reakcja na brak pamięci; limit ustawiono na 31 bajtów
+            MTEST3, // Reakcja na brak pamięci; limit ustawiono na 292 bajtów
+            MTEST4, // Reakcja na brak pamięci; limit ustawiono na 380 bajtów
+            NULL
+        };
+
+        for (volatile int idx = 0; pfcn[idx] != NULL && !test_get_session_termination_flag(); idx++)
+        {
+            if (selected_test == -1 || selected_test == idx + 1)
+                pfcn[idx](vargc, vargv, venvp);
+
+            // limit niezaliczonych testów, po jakim testy jednostkowe zostaną przerwane
+            if (test_session_get_fail_count() >= 1000)
+                test_terminate_session();
+        }
+
+
+        test_title("RLDebug :: Analiza wycieku zasobów");
+        // sprawdź wycieki pamięci
+        int leaks_detected = rldebug_show_leaked_resources(1);
+        test_set_session_leaks(leaks_detected);
+
+        // poinformuj serwer Mrówka o wyniku testu - podsumowanie
+        test_title("Podsumowanie");
+        if (selected_test == -1)
+            test_summary(4); // wszystkie testy muszą zakończyć się sukcesem
+        else
+            test_summary(1); // tylko jeden (selected_test) test musi zakończyć się  sukcesem
+
+        return EXIT_SUCCESS;
+    }
+
+    printf("*** Nieznana wartość RunMode: %d", (int)run_mode);
+    abort();
+}
